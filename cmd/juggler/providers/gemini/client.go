@@ -75,22 +75,18 @@ func NewClient(cfg provider.Config) (provider.Provider, error) {
 	}
 
 	// Create a custom HTTP client for ListModels only (not for genai client)
-	httpClient := &http.Client{
-		Timeout: 90 * time.Second,
-		Transport: &http.Transport{
-			Proxy: httpx.Proxy,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).DialContext,
-			TLSHandshakeTimeout:   30 * time.Second,
-			ResponseHeaderTimeout: 30 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-			MaxIdleConns:          100,
-			MaxIdleConnsPerHost:   10,
-			IdleConnTimeout:       90 * time.Second,
-		},
-	}
+	transport := httpx.Transport()
+	transport.DialContext = (&net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}).DialContext
+	transport.TLSHandshakeTimeout = 30 * time.Second
+	transport.ResponseHeaderTimeout = 30 * time.Second
+	transport.ExpectContinueTimeout = 1 * time.Second
+	transport.MaxIdleConns = 100
+	transport.MaxIdleConnsPerHost = 10
+	transport.IdleConnTimeout = 90 * time.Second
+	httpClient := &http.Client{Timeout: 90 * time.Second, Transport: transport}
 
 	return &Client{
 		client:          client,

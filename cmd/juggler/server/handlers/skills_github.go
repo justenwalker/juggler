@@ -13,6 +13,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"juggler/internal/httpx"
 )
 
 // The skills marketplace fetches skill definitions from external registries. A
@@ -79,7 +81,7 @@ func newGitHubFetcher() *githubFetcher {
 		apiBase: defaultGitHubAPIBase,
 		rawBase: defaultGitHubRawBase,
 		token:   strings.TrimSpace(os.Getenv("GITHUB_TOKEN")),
-		client:  &http.Client{Timeout: 30 * time.Second},
+		client:  httpx.Client(30 * time.Second),
 	}
 }
 

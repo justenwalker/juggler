@@ -15,6 +15,7 @@ of changes; this project follows semantic versioning.
 - Quick successive edits undo as one step even when the machine is busy
 - Long files are no longer shown cut short in a panel about 100 lines tall
 - Double-clicking Duplicate or Fork makes one copy, and shows "Duplicating…" meanwhile
+- Outbound HTTPS trusts only `SSL_CERT_FILE`/`SSL_CERT_DIR` roots when either is set
 
 ## [0.7.9] - 2026-10-28
 

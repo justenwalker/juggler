@@ -16,6 +16,8 @@
 package httpx
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"net/http"
 	"net/url"
 	"sync/atomic"
@@ -73,16 +75,29 @@ func Proxy(req *http.Request) (*url.URL, error) {
 	return r.fn(req)
 }
 
-// Transport returns a clone of http.DefaultTransport with Proxy wired in.
+// Transport returns a clone of http.DefaultTransport with Proxy wired in. When
+// SSL_CERT_FILE or SSL_CERT_DIR is set, only the roots they name are trusted.
 // Callers that need custom timeouts start from this rather than a bare
 // &http.Transport{}, so they inherit the standard dial/TLS/idle defaults.
 func Transport() *http.Transport {
+	return transportWithRoots(envRoots())
+}
+
+func transportWithRoots(roots *x509.CertPool) *http.Transport {
+	var t *http.Transport
 	if base, ok := http.DefaultTransport.(*http.Transport); ok {
-		t := base.Clone()
+		t = base.Clone()
 		t.Proxy = Proxy
-		return t
+	} else {
+		t = &http.Transport{Proxy: Proxy}
 	}
-	return &http.Transport{Proxy: Proxy}
+	if roots != nil {
+		if t.TLSClientConfig == nil {
+			t.TLSClientConfig = &tls.Config{}
+		}
+		t.TLSClientConfig.RootCAs = roots
+	}
+	return t
 }
 
 // Client returns an *http.Client with the given client-level timeout and a
